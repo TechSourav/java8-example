@@ -13,7 +13,8 @@ public class FlatmapDemo {
         List<String> carComp= Arrays.asList("Maruti","Honda","Audi","Nissan");
         List<String> carModels= Arrays.asList("Swift","City","H123","Micra");
         List<List<String>> cars = Arrays.asList(carComp,carModels);//new ArrayList<List<String>>();
-        List<String> finalCars=cars.stream().flatMap(x->x.stream()).collect(Collectors.toList());
+        List<String> finalCars=cars.stream()
+                                   .flatMap(x->x.stream()).collect(Collectors.toList());
         finalCars.stream().forEach(System.out::println);
         finalCars.stream().filter(x->x.startsWith("H")).forEach(System.out::println);
 

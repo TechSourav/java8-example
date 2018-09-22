@@ -362,19 +362,19 @@ public class TestStreamAPI {
         System.out.println("..........FLATMAP EXAMPLES................");
        // See Flatmapdemp.java
     }
-}
 
-class Person {
-    String name;
-    int age;
+    static class Person {
+        String name;
+        int age;
 
-    Person(String name, int age) {
-        this.name = name;
-        this.age = age;
-    }
+        Person(String name, int age) {
+            this.name = name;
+            this.age = age;
+        }
 
-    @Override
-    public String toString() {
-        return name;
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }
