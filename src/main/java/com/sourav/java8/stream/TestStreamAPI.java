@@ -240,7 +240,7 @@ public class TestStreamAPI {
         System.out.println("..........................................");
 
         Stream.of("d2", "a2", "b1", "b3", "c")
-                .sorted((s1,s2)->{
+                .sorted((s1,s2)->{ // sorted is a statefull operation.
                         System.out.printf("sort: %s; %s\n", s1, s2);
                         return s1.compareTo(s2);
                 }).forEach(s -> System.out.println("forEach: " + s));
@@ -361,6 +361,73 @@ public class TestStreamAPI {
 
         System.out.println("..........FLATMAP EXAMPLES................");
        // See Flatmapdemp.java
+
+        System.out.println("..........................................");
+
+        persons.stream()
+                .reduce((p1, p2) -> p1.age > p2.age ? p1 : p2)
+                .ifPresent(System.out::println);
+        Person result =
+                persons.stream()
+                        .reduce(new Person("", 0), // identity value for accumulator funtion
+                                (p1, p2) -> {
+                                            p1.age += p2.age;
+                                            p1.name += p2.name;
+                                            return p1;
+                                });
+
+        System.out.format("name=%s; age=%s", result.name, result.age);
+
+        Integer ageSum = persons
+                .stream()
+                .reduce(0, // // identity value for combiner funtion
+                            (sum, p) -> sum += p.age,  // Accumulator function
+                            (sum1, sum2) -> sum1 + sum2  // combiner funtion
+                );
+
+        System.out.println("\n"+ageSum);
+        System.out.println("\n...................Same code in Debug Mode............. \n");
+        // Let's write the code in debug mode to understand what is happening under the hood.
+        Integer ageSumDebuggingCode = persons
+                .stream()
+                .reduce(0,
+                        (sum, p) -> {
+                            System.out.format("accumulator: sum=%s; person=%s\n", sum, p);
+                            return sum += p.age;
+                        },
+                        (sum1, sum2) -> {
+                            System.out.format("combiner: sum1=%s; sum2=%s\n", sum1, sum2);
+                            return sum1 + sum2;
+                        });
+        /**
+         * As you can see the accumulator function does all the work.
+         * It first get called with the initial identity value 0 and
+         * the first person Max. In the next three steps sum continually
+         * increases by the age of the last steps person up to a total age of 76.
+         *
+         * Wait wat? The combiner never gets called? Executing the same stream in parallel will lift the secret:
+         *
+         * Check the below code with parallel Stream and then see the below explanation..
+         *
+         * " Executing this stream in parallel results in an entirely different execution behavior.
+         * Now the combiner is actually called. Since the accumulator is called in parallel,
+         * the combiner is needed to sum up the separate accumulated values. "
+         *
+         **/
+
+        System.out.println("\n...................Same code in parallelStream............. \n");
+
+        Integer ageSumWithParallelStreamMode = persons
+                .parallelStream()
+                .reduce(0,
+                        (sum, p) -> {
+                            System.out.format("accumulator: sum=%s; person=%s\n", sum, p);
+                            return sum += p.age;
+                        },
+                        (sum1, sum2) -> {
+                            System.out.format("combiner: sum1=%s; sum2=%s\n", sum1, sum2);
+                            return sum1 + sum2;
+                        });
     }
 
     static class Person {
